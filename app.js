@@ -35,53 +35,30 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
   if (type === InteractionType.APPLICATION_COMMAND) {
     // Slash command with name of "test"
 
+
     if (data.name === "remove_task") {
       // Send a modal as response
+      const context = req.body.context
+      const userId = context === 0 ? req.body.member.body.user.id : req.body.user.id;
+      const objectName = req.body.data.options[0].value;
       console.log('sending modal')
       return res.send({
-        type: InteractionResponseType.MODAL,
+        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
         data: {
-          custom_id: "my_modal",
-          title: "Modal title",
-          components: [
-            {
-              // Text inputs must be inside of an action component
-              type: MessageComponentTypes.ACTION_ROW,
-              components: [
-                {
-                  // See https://discord.com/developers/docs/interactions/message-components#text-inputs-text-input-structure
-                  type: MessageComponentTypes.STRING_SELECT,
-                  custom_id: 'task_name',
-                  min_values: 1,
-                  options: [
-                    {
-                      label: "Task 1",
-                      value: "task_1",
-                      description: "Task 1 description",
-                      default: true
-                    },
-                    {
-                      label: "Task 2",
-                      value: "task_2",
-                      description: "Task 2 description",
-                    },
-                  ]
-                },
-              ],
-            },
-          ],
+          // Fetches a random emoji to send from a helper function
+          content: `hello world ${getRandomEmoji()}`,
         },
       });
     }
 
     if (data.name === 'add_task') {
-      // Send a modal as response
+
       console.log('sending modal')
       return res.send({
         type: InteractionResponseType.MODAL,
         data: {
           custom_id: "my_modal",
-          title: "Modal title",
+          title: "New Task",
           components: [
             {
               // Text inputs must be inside of an action component
@@ -92,7 +69,7 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
                   type: MessageComponentTypes.INPUT_TEXT,
                   custom_id: 'task_name',
                   style: 1,
-                  label: "Type some text",
+                  label: "Task Name",
                 },
               ],
             },
@@ -102,9 +79,8 @@ app.post('/interactions', verifyKeyMiddleware(process.env.PUBLIC_KEY), async fun
                 {
                   type: MessageComponentTypes.INPUT_TEXT,
                   custom_id: 'task_description',
-                  // Bigger text box for input
                   style: 2,
-                  label: 'Type some (longer) text',
+                  label: 'Task Description',
                 },
               ],
             },
