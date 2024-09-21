@@ -3,15 +3,16 @@
   "private": true,
   "version": "1.0.0",
   "description": "A cleaning tracker bot for Discord",
-  "main": "app.js",
-  "type": "module",
+  "main": "client.js",
+  "type": "cjs",
   "engines": {
     "node": ">=18.x"
   },
   "scripts": {
-    "start": "node app.js",
+    "start": "node client.js",
     "register": "node commands.js",
-    "dev": "nodemon app.js"
+    "dev": "nodemon client.js",
+    "inspect": "nodemon --inspect client.js"
   },
   "author": "Quentin Gibson",
   "license": "MIT",

@@ -1,80 +1,100 @@
-import db from "./prisma"
-import {ActionRowBuilder, Client, GatewayIntentBits, ModalBuilder, REST, Routes, StringSelectMenuBuilder, TextInputBuilder, TextInputStyle} from 'discord.js'
+const fs = require("fs");
+const path = require("path");
 
-const commands = [
-  {
-    name: "add_task",
-    description: "Add a task to the list.",
-  },
-  {
-    name: "remove_task",
-    description: "Delete task from list."
-  }
-]
+const { Events, Client, GatewayIntentBits, Collection } = require("discord.js");
+const prisma = require("./prisma");
+require("dotenv").config();
 
 const client = new Client({
-  intents: [
-    GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.GuildMembers,
-    GatewayIntentBits.GuildMessageReactions,
-  ],
+  intents: [GatewayIntentBits.GuildMessages],
 });
 
-const rest = new REST({version: '10'}).setToken(process.env.DISCORD_TOKEN);
+client.once(Events.ClientReady, (readyClient) => {
+  console.log(`Ready! Logged in as ${readyClient.user.tag}`);
+});
 
-try {
-  console.log('Started refreshing application (/) commands.');
+client.login(process.env.DISCORD_TOKEN);
 
-  (async () => {
-    await rest.put(
-      Routes.applicationGuildCommands(process.env.CLIENT_ID, process.env.GUILD_ID),
-      { body: commands },
-    );
+client.commands = new Collection();
 
-    console.log('Successfully reloaded application (/) commands.');
-  })();
-} catch (error) {
-  console.error(error);
+const foldersPath = path.join(__dirname, "commands");
+const commandFolders = fs.readdirSync(foldersPath);
+
+for (const folder of commandFolders) {
+  const commandsPath = path.join(foldersPath, folder);
+  const commandFiles = fs
+    .readdirSync(commandsPath)
+    .filter((file) => file.endsWith(".js"));
+  for (const file of commandFiles) {
+    const filePath = path.join(commandsPath, file);
+    const command = require(filePath);
+    // Set a new item in the Collection with the key as the command name and the value as the exported module
+    if ("data" in command && "execute" in command) {
+      client.commands.set(command.data.name, command);
+    } else {
+      console.log(
+        `[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`
+      );
+    }
+  }
 }
 
-client.on('interactionCreate', async (interaction) => {
-  if (interaction.commandName === "add_task") {
-    const modal = new ModalBuilder()
-      .setCustomId("newTask")
-      .setTitle("New Task");
+client.on(Events.InteractionCreate, async (interaction) => {
+  console.log(interaction);
 
-    const nameInput = new TextInputBuilder()
-      .setCustomId("taskNameInput")
-      .setLabel("New task name")
-      .setStyle(TextInputStyle.Short);
-    const descriptionIndex = new TextInputBuilder()
-      .setCustomId("taskDescriptionInput")
-      .setLabel("New task description")
-      .setStyle(TextInputStyle.Paragraph);
+  if (interaction.isChatInputCommand()) {
+    const command = interaction.client.commands.get(interaction.commandName);
 
-    const firstRow = new ActionRowBuilder().addComponents(nameInput);
-    const secondRow = new ActionRowBuilder().addComponents(descriptionIndex);
+    if (!command) {
+      console.error(
+        `No command matching ${interaction.commandName} was found.`
+      );
+      return;
+    }
 
-    modal.addComponents(firstRow, secondRow);
-
-    console.log("sending modal");
-    await interaction.showModal(modal);
+    try {
+      await command.execute(interaction);
+    } catch (error) {
+      console.error(error);
+      if (interaction.replied || interaction.deferred) {
+        await interaction.followUp({
+          content: "There was an error while executing this command!",
+          ephemeral: true,
+        });
+      } else {
+        await interaction.reply({
+          content: "There was an error while executing this command!",
+          ephemeral: true,
+        });
+      }
+    }
   }
 
-  if (interaction.commandName === "remove_task") {
-    const dbTasks = await db.task.findMany({take: 100})
-    const taskList = dbTasks.map(task => ({ label: task.name, value: task.id}))
-    const modal = new ModalBuilder()
-      .setCustomId("removeTask")
-      .setTitle("Remove Task");
+  if (interaction.isModalSubmit()) {
+    console.log("Modal submit detected");
 
-    const taskMenu = new StringSelectMenuBuilder().setCustomId("taskListMenu").setPlaceholder("Select a task to be DELETED!").options(taskList)
+    if (interaction.customId === "deleteTask") {
+      console.log("Delete task modal detected");
+      // const taskName = interaction.fields.getField("taskListMenu")
+      // console.log(taskName)
+    }
 
-    const firstRow = new ActionRowBuilder().addComponents(taskMenu)
+    if (interaction.customId === "newTask") {
+      console.log("New task modal detected");
+      const taskName = interaction.fields.getTextInputValue("taskNameInput");
+      const taskDescription = interaction.fields.getTextInputValue("taskDescriptionInput");
 
-    modal.addComponents(firstRow)
+      prisma.task.create({
+        data: {
+          name: taskName,
+          description: taskDescription,
+        },
+      });
+    }
 
-    await interaction.showModal(modal)
   }
 });
+
+
+
+
