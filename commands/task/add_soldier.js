@@ -6,17 +6,18 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName('add_soldier')
     .setDescription('Add a discord user to the list of availble soldiers.')
-    .addUserOption((option) => {
+    .addUserOption((option) => 
       option
         .setName('soldier')
         .setDescription('User to be added to the list')
-        .setRequired(true);
-    }),
+        .setRequired(true)
+    ),
 
   async execute(interation) {
-    const userId = interation.options.getUser('soldier');
+    const userId = interation.options.getUser('soldier').id;
+    const username = interation.options.getUser('soldier').username;
     try {
-      await prisma.soldier.create({ data: { userId } });
+      await prisma.soldier.create({ data: { userId, username } });
       await interation.reply({
         content: 'Soldier added to the list!',
       });

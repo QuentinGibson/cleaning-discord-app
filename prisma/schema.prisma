@@ -31,6 +31,7 @@ model Task {
 model Soldier {
   id          Int           @id @default(autoincrement())
   userId      String        @db.VarChar(255) @unique
+  username    String        @db.VarChar(255)
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
   tasks       TaskSoldier[] @relation("SoldierToTaskSoldiers")

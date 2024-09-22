@@ -5,7 +5,6 @@ const {
   ActionRowBuilder,
   TextInputStyle,
 } = require('discord.js');
-const prisma = require('../../prisma/index.js');
 
 module.exports = {
   data: new SlashCommandBuilder()
