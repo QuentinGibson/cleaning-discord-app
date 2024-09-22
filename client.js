@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const { Events, Client, GatewayIntentBits, Collection, ModalBuilder, ActionRowBuilder, TextInputBuilder } = require("discord.js");
+const { Events, Client, GatewayIntentBits, Collection } = require("discord.js");
 const prisma = require("./prisma");
 require("dotenv").config();
 
