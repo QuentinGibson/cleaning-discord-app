@@ -2,13 +2,13 @@ const {
   SlashCommandBuilder,
   ActionRowBuilder,
   StringSelectMenuBuilder,
-} = require("discord.js");
-const prisma = require("../../prisma/index.js");
+} = require('discord.js');
+const prisma = require('../../prisma/index.js');
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName("remove_task")
-    .setDescription("Remove a task from the task list"),
+    .setName('remove_task')
+    .setDescription('Remove a task from the task list'),
 
   async execute(interaction) {
     const taskList = (await prisma.task.findMany({ take: 100 })).map(
@@ -16,21 +16,21 @@ module.exports = {
         label: task.name,
         description: task.description,
         value: task.id.toString(),
-      })
+      }),
     );
 
     const nameMenu = new StringSelectMenuBuilder()
-      .setCustomId("taskListMenu")
+      .setCustomId('taskListMenu')
       .setMinValues(1)
       .addOptions(taskList)
-      .setPlaceholder("Select a task to be DELETED!");
+      .setPlaceholder('Select a task to be DELETED!');
 
     const row = new ActionRowBuilder().addComponents(nameMenu);
 
-    console.log("sending menu");
+    console.log('sending menu');
 
     const response = await interaction.reply({
-      content: "Select tasks that will be permanently DELETED!",
+      content: 'Select tasks that will be permanently DELETED!',
       components: [row],
     });
 
@@ -42,23 +42,22 @@ module.exports = {
         time: 120_000,
       });
 
-      if (confirmation.customId === "taskListMenu") {
+      if (confirmation.customId === 'taskListMenu') {
         const taskIds = confirmation.values.map((id) => parseInt(id));
         const tasks = await prisma.task.findMany({
           where: { id: { in: taskIds } },
         });
         const taskNames = tasks.map((task) => task.name);
         try {
-
-        await prisma.task.deleteMany({ where: { id: { in: taskIds } } });
-        await interaction.editReply({
-          content: `Tasks ${taskNames.join(", ")} have been deleted!`,
-          components: [],
-        });
+          await prisma.task.deleteMany({ where: { id: { in: taskIds } } });
+          await interaction.editReply({
+            content: `Tasks ${taskNames.join(', ')} have been deleted!`,
+            components: [],
+          });
         } catch (e) {
           console.log(e);
           await interaction.editReply({
-            content: `Failed to delete tasks ${taskNames.join(", ")}!`,
+            content: `Failed to delete tasks ${taskNames.join(', ')}!`,
             components: [],
           });
         }
@@ -66,7 +65,7 @@ module.exports = {
     } catch (e) {
       console.log(e);
       await interaction.editReply({
-        content: "You took too long to respond! Cancelling...",
+        content: 'You took too long to respond! Cancelling...',
         components: [],
       });
     }

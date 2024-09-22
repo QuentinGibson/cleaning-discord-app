@@ -18,16 +18,31 @@ datasource db {
 }
 
 model Task {
-  id          Int      @id @default(autoincrement())
-  name        String   @db.VarChar(255)
-  description String?  @db.Text
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id          Int           @id @default(autoincrement())
+  name        String        @db.VarChar(255)
+  description String?       @db.Text
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  soldiers    TaskSoldier[] @relation("TaskToTaskSoldiers")
+
+  // Relation with TaskSoldiers is defined as `TaskToTaskSoldiers`
 }
 
 model Soldier {
-  id          Int      @id @default(autoincrement())
-  userId      String   @db.VarChar(255)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id          Int           @id @default(autoincrement())
+  userId      String        @db.VarChar(255) @unique
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  tasks       TaskSoldier[] @relation("SoldierToTaskSoldiers")
+
+  // Relation with TaskSoldiers is defined as `SoldierToTaskSoldiers`
+}
+
+model TaskSoldier {
+  taskId      Int
+  soldierId   Int
+  task        Task      @relation(fields: [taskId], references: [id], onDelete: Cascade, name: "TaskToTaskSoldiers")
+  soldier     Soldier   @relation(fields: [soldierId], references: [id], onDelete: Cascade, name: "SoldierToTaskSoldiers")
+
+  @@id([taskId, soldierId])
 }
