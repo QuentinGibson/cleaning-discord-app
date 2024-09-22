@@ -72,22 +72,3 @@ module.exports = {
     }
   },
 };
-
-// client.on('interactionCreate', async (interaction) => {
-
-//   if (interaction.commandName === "remove_task") {
-//     const dbTasks = await prisma.task.findMany({take: 100})
-//     const taskList = dbTasks.map(task => ({ label: task.name, value: task.id}))
-//     const modal = new ModalBuilder()
-//       .setCustomId("removeTask")
-//       .setTitle("Remove Task");
-
-//     const taskMenu = new StringSelectMenuBuilder().setCustomId("taskListMenu").setPlaceholder("Select a task to be DELETED!").options(taskList)
-
-//     const firstRow = new ActionRowBuilder().addComponents(taskMenu)
-
-//     modal.addComponents(firstRow)
-
-//     await interaction.showModal(modal)
-//   }
-// });

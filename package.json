@@ -10,7 +10,7 @@
   },
   "scripts": {
     "start": "node client.js",
-    "register": "node commands.js",
+    "register": "node command-deploy.js",
     "dev": "nodemon client.js",
     "inspect": "nodemon --inspect client.js"
   },
