@@ -1,6 +1,6 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { PrismaClientKnownRequestError } = require('@prisma/client');
 const prisma = require('../../prisma');
+const { PrismaClientKnownRequestError } = require('@prisma/client');
 
 module.exports = {
   data: new SlashCommandBuilder()
