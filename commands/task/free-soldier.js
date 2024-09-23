@@ -17,7 +17,8 @@ module.exports = {
     const userId = interaction.options.getUser('soldier').id;
     const username = interaction.options.getUser('soldier').username;
     try {
-      await prisma.taskSoldier.deleteMany({ where: { soldierId: userId } });
+      const soldier = await prisma.soldier.findUnique({ where: { userId } });
+      await prisma.taskSoldier.deleteMany({ where: { soldierId: soldier.id } });
       await interaction.reply({
         content: `Soldier ${username} freed!`,
       });
@@ -29,7 +30,7 @@ module.exports = {
       } else {
         console.log(e);
         await interaction.reply({
-          content: 'Failed to add soldier to the list!',
+          content: 'Failed to free soldier!',
         });
       }
     }
